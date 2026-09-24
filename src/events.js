@@ -28,14 +28,14 @@ function handleLineNumberClick(event) {
     const prev = state.totalLinesEver;
     sides[side].add(lineKey);
     state.totalLinesEver++;
-    setLineVisualState(tr, true);
+    setLineVisualState(td, true);
     updateFileProgress(filePath);
     scheduleSave();
     checkMilestone(prev);
   } else {
     sides[side].delete(lineKey);
     state.totalLinesEver = Math.max(0, state.totalLinesEver - 1);
-    setLineVisualState(tr, false);
+    setLineVisualState(td, false);
     updateFileProgress(filePath);
     scheduleSave();
   }

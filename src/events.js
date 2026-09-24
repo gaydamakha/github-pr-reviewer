@@ -50,12 +50,15 @@ export function bindLineNumberClicks(root) {
     td.addEventListener('click', handleLineNumberClick);
     td.addEventListener('mouseenter', () => { state.lastHoveredTd = td; });
 
-    // Bind the whole row so hovering anywhere on it updates lastHoveredTd
+    // Bind the whole row so hovering anywhere on it updates lastHoveredTd. In split view
+    // the side under the pointer wins; otherwise prefer the right side.
     const tr = td.closest('tr');
     if (tr && !tr.dataset.reviewerRowBound) {
       tr.dataset.reviewerRowBound = '1';
-      tr.addEventListener('mouseenter', () => {
+      tr.addEventListener('mouseover', (event) => {
+        const side = event.target.closest('td')?.getAttribute('data-diff-side');
         const preferredTd =
+          (side && tr.querySelector(`td.new-diff-line-number[data-diff-side="${side}"][data-line-number]:not(.diff-line-number-neutral)`)) ||
           tr.querySelector('td.new-diff-line-number[data-diff-side="right"][data-line-number]') ||
           tr.querySelector('td.new-diff-line-number[data-line-number]');
         if (preferredTd) state.lastHoveredTd = preferredTd;

@@ -7,6 +7,7 @@ const { state } = await import('../src/state.js');
 const { setLineVisualState, applyStateToDOM } = await import('../src/visual.js');
 const { updateFileProgress } = await import('../src/progress.js');
 const { getFilePathForRow, getLineKey, tableForFilePath } = await import('../src/dom.js');
+const { bindLineNumberClicks } = await import('../src/events.js');
 
 // Split-view row pairing a deletion (left) with an addition (right)
 function findPairedRow() {
@@ -89,4 +90,22 @@ test('file progress counts reviewed sides, not rows', () => {
   setLineVisualState(sideTd(tr, 'right'), true);
   updateFileProgress(filePath);
   assert.match(badge.textContent, /^2\/\d+$/);
+});
+
+test('hovering a side of a paired row targets that side for keyboard marking', () => {
+  const tr = findPairedRow();
+  const left = sideTd(tr, 'left');
+  const right = sideTd(tr, 'right');
+  // The fixture was saved with the extension running, so rows already carry the bound markers
+  for (const el of [tr, ...tr.querySelectorAll('td')]) {
+    delete el.dataset.reviewerBound;
+    delete el.dataset.reviewerRowBound;
+  }
+  bindLineNumberClicks(tr.closest('table'));
+  const hover = (el) => el.dispatchEvent(new document.defaultView.MouseEvent('mouseover', { bubbles: true }));
+
+  hover(left.nextElementSibling.querySelector('.diff-text-inner'));
+  assert.equal(state.lastHoveredTd, left);
+  hover(right.nextElementSibling);
+  assert.equal(state.lastHoveredTd, right);
 });
